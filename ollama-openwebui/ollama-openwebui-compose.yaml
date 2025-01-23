@@ -36,15 +36,15 @@ services:
       - host.docker.internal:host-gateway
     restart: unless-stopped
   
-  pipelines:
-    image: ghcr.io/open-webui/pipelines:main
-    container_name: ollama-open-webui-pipelines
-    ports:
-      - 9099:9099
-    environment:
-      # Example pipeline
-      # - PIPELINES_URLS="https://github.com/open-webui/pipelines/blob/main/examples/filters/detoxify_filter_pipeline.py"
-      - ADD_HOST=host.docker.internal:host-gateway
-    env_file: ".env"
-    volumes:
-      - ${DATA_DIR}/pipelines:/app/pipelines
+  # pipelines:
+  #   image: ghcr.io/open-webui/pipelines:main
+  #   container_name: ollama-open-webui-pipelines
+  #   ports:
+  #     - 9099:9099
+  #   environment:
+  #     # Example pipeline
+  #     # - PIPELINES_URLS="https://github.com/open-webui/pipelines/blob/main/examples/filters/detoxify_filter_pipeline.py"
+  #     - ADD_HOST=host.docker.internal:host-gateway
+  #   env_file: ".env"
+  #   volumes:
+  #     - ${DATA_DIR}/pipelines:/app/pipelines
