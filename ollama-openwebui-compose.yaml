@@ -1,12 +1,15 @@
 services:
   ollama:
-    volumes:
-      - ollama:/root/.ollama
+    image: ollama/ollama:latest
     container_name: ollama
-    pull_policy: always
-    tty: true
+    ports:
+      - ${OLLAMA_PORT}:11434
     restart: unless-stopped
-    image: ollama/ollama:${OLLAMA_DOCKER_TAG-latest}
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_KEEP_ALIVE=24h
+    volumes:
+      - ${DATA_DIR}/ollama:/root/.ollama
     deploy:
       resources:
         reservations:
@@ -16,15 +19,10 @@ services:
               capabilities: [gpu]
 
   open-webui:
-    build:
-      context: .
-      args:
-        OLLAMA_BASE_URL: '/ollama'
-      dockerfile: Dockerfile
     image: ghcr.io/open-webui/open-webui:${WEBUI_DOCKER_TAG-main}
     container_name: open-webui
     volumes:
-      - open-webui:/app/backend/data
+      - ${DATA_DIR}/open-webui:/app/backend/data
     depends_on:
       - ollama
     ports:
@@ -35,7 +33,15 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
     restart: unless-stopped
-
-volumes:
-  ollama: {}
-  open-webui: {}
+  
+  pipelines:
+    image: ghcr.io/open-webui/pipelines:main
+    container_name: ollama-open-webui-pipelines
+    ports:
+      - 9099:9099
+    environment:
+      # Example pipeline
+      # - PIPELINES_URLS="https://github.com/open-webui/pipelines/blob/main/examples/filters/detoxify_filter_pipeline.py"
+      - ADD_HOST=host.docker.internal:host-gateway
+    volumes:
+      - ${DATA_DIR}/pipelines:/app/pipelines
