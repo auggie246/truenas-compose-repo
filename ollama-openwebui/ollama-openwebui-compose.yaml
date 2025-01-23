@@ -10,8 +10,8 @@ services:
       - OLLAMA_KEEP_ALIVE=24h
     env_file: ".env"
     volumes:
-      - ${DATA_DIR}/ollama:/root/.ollama
-      - ${MODELS_DIR}:~/.ollama/models
+      - ${STACKS_DIR}/ollama:/root/.ollama
+#      - ${MODELS_DIR}:/root/.ollama/models
     deploy:
       resources:
         reservations:
@@ -24,7 +24,7 @@ services:
     image: ghcr.io/open-webui/open-webui:${WEBUI_DOCKER_TAG-main}
     container_name: open-webui
     volumes:
-      - ${DATA_DIR}/open-webui:/app/backend/data
+      - ${STACKS_DIR}/open-webui:/app/backend/data
     depends_on:
       - ollama
     ports:
@@ -48,4 +48,4 @@ services:
   #     - ADD_HOST=host.docker.internal:host-gateway
   #   env_file: ".env"
   #   volumes:
-  #     - ${DATA_DIR}/pipelines:/app/pipelines
+  #     - ${STACKS_DIR}/pipelines:/app/pipelines
