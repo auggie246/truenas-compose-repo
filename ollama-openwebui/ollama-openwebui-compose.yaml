@@ -11,6 +11,7 @@ services:
     env_file: ".env"
     volumes:
       - ${DATA_DIR}/ollama:/root/.ollama
+      - ${MODELS_DIR}:~/.ollama/models
     deploy:
       resources:
         reservations:
