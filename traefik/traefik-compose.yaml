@@ -22,8 +22,6 @@ services:
         target: /var/log/traefik/
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
-      - CLOUDFLARE_API_KEY=d0ERz9OVn-h4sQ-urCSuic7u0PwIuXuXRjMPpXnw
-      - CLOUDFLARE_EMAIL=auggie.teo@gmail.com
       - CLOUDFLARE_PROPAGATION_TIMEOUT=90 # I never needed this before, but for some reason, I needed it on TrueNAS.
     restart: unless-stopped
 networks:
