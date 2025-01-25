@@ -23,6 +23,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       - CLOUDFLARE_PROPAGATION_TIMEOUT=90 # I never needed this before, but for some reason, I needed it on TrueNAS.
+    env_file: ".env"
     restart: unless-stopped
 networks:
   proxy_network:
