@@ -1,0 +1,31 @@
+services:
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - 80:80 # Traefik 
+      - 443:443 # Traefik
+      - 8181:8080 # Traefik Dashboard # I recommend removing it once you prove the system is working.
+    networks:
+      - proxy_network
+    volumes:
+      - type: bind
+        source: /mnt/NVME/docker/stacks/traefik/config
+        target: /etc/traefik
+      - type: bind
+        source: /mnt/NVME/docker/stacks/traefik/sslcerts
+        target: /etc/traefik/sslcerts
+      - type: bind
+        source: /mnt/NVME/docker/stacks/traefik/logs
+        target: /var/log/traefik/
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - CLOUDFLARE_API_KEY=d0ERz9OVn-h4sQ-urCSuic7u0PwIuXuXRjMPpXnw
+      - CLOUDFLARE_EMAIL=auggie.teo@gmail.com
+      - CLOUDFLARE_PROPAGATION_TIMEOUT=90 # I never needed this before, but for some reason, I needed it on TrueNAS.
+    restart: unless-stopped
+networks:
+  proxy_network:
+    external: true
