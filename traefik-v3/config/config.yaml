@@ -1,4 +1,4 @@
-http:
+http: # extra config for handling ssl termination for better security
   middlewares:    
     default-security-headers:
       headers:
