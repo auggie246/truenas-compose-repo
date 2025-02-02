@@ -17,6 +17,10 @@ http: # extra config for handling ssl termination for better security
       redirectScheme:
         scheme: https
         permanent: true
+    crowdsec-bouncer:
+      forwardauth:
+        address: http://bouncer-traefik:8080/api/v1/forwardAuth
+        trustForwardHeader: true
 
   routers:
     portainer:
@@ -35,3 +39,4 @@ http: # extra config for handling ssl termination for better security
         servers:
           - url: "https://192.168.200.122:9443"
         passHostHeader: true
+    
