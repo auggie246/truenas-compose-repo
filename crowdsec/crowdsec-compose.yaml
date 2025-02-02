@@ -19,8 +19,9 @@ services:
   bouncer-traefik:
     image: docker.io/fbonalair/traefik-crowdsec-bouncer:latest
     container_name: bouncer-traefik
+    env_file:
+      - .env
     environment:
-      CROWDSEC_BOUNCER_API_KEY: create_a_random_api_key
       CROWDSEC_AGENT_HOST: crowdsec:8080
     networks:
       - proxy
