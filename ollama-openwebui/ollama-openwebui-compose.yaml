@@ -36,6 +36,19 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
     restart: unless-stopped
+    networks: 
+      - proxy_network
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.open-webui.rule=Host(`chatbot.auggie.space`)
+      - traefik.http.routers.open-webui.entrypoints=websecure
+      - traefik.http.services.open-webui.loadbalancer.server.port=8282
+      - traefik.http.routers.open-webui.tls.certresolver=production
+      - traefik.http.routers.open-webui.tls=true
+
+networks:
+  proxy_network:
+    external: true    
   
   # pipelines:
   #   image: ghcr.io/open-webui/pipelines:main
