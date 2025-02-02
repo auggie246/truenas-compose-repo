@@ -6,10 +6,10 @@ services:
       GID: "${GID-1000}"
       COLLECTIONS: "crowdsecurity/linux crowdsecurity/traefik"
     volumes:
-      - /home/ubuntu/docker/crowdsec/acquis.yaml:/etc/crowdsec/acquis.yaml
-      - /home/ubuntu/docker/crowdsec/db:/var/lib/crowdsec/data/
-      - /home/ubuntu/docker/crowdsec/config:/etc/crowdsec/
-      - /home/ubuntu/docker/traefik/logs:/var/log/traefik/:ro
+      - ./acquis.yaml:/etc/crowdsec/acquis.yaml
+      - ./db:/var/lib/crowdsec/data/
+      - ./config:/etc/crowdsec/
+      - ../traefik-v3/logs:/var/log/traefik/:ro
     networks:
       - proxy
     security_opt:
