@@ -8,8 +8,8 @@ entryPoints:
   http:
     address: ":80"
     http:
-     middlewares:
-       - crowdsec-bouncer@file
+      middlewares:
+        - crowdsec-bouncer@file
       redirections:
         entrypoint:
           to: https
@@ -17,13 +17,13 @@ entryPoints:
   https:
     address: ":443"
     http:
-     middlewares:
-       - crowdsec-bouncer@file
+      middlewares:
+        - crowdsec-bouncer@file
   http-external:
     address: ":81"
     http:
-     middlewares:
-       - crowdsec-bouncer@file
+      middlewares:
+        - crowdsec-bouncer@file
       redirections:
         entrypoint:
           to: https-external
@@ -31,8 +31,8 @@ entryPoints:
   https-external:
     address: ":444"
     http:
-     middlewares:
-       - crowdsec-bouncer@file
+      middlewares:
+        - crowdsec-bouncer@file
   # tcp:
    # address: ":10000"
   # apis:
