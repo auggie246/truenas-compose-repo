@@ -8,20 +8,6 @@ api:
 entryPoints:
   http:
     address: ":80"
-    http:
-      middlewares:
-        - crowdsec-bouncer@file
-      redirections:
-        entrypoint:
-          to: https
-          scheme: https
-  https:
-    address: ":443"
-    http:
-      middlewares:
-        - crowdsec-bouncer@file
-  http-external:
-    address: ":81"
     forwardedHeaders:
       trustedIPs: &trustedIps
         # Start of Clouflare public IP list for HTTP requests, remove this if you don't use it; https://www.cloudflare.com/ips/
@@ -53,12 +39,30 @@ entryPoints:
         - crowdsec-bouncer@file
       redirections:
         entrypoint:
+          to: https
+          scheme: https
+  https:
+    address: ":443"
+    forwardedHeaders:
+      # Reuse list of Cloudflare Trusted IP's above for HTTPS requests
+      trustedIPs: *trustedIps
+    http:
+      middlewares:
+        - crowdsec-bouncer@file
+  http-external:
+    address: ":81"
+    forwardedHeaders:
+      trustedIPs: *trustedIps
+    http:
+      middlewares:
+        - crowdsec-bouncer@file
+      redirections:
+        entrypoint:
           to: https-external
           scheme: https
   https-external:
     address: ":444"
     forwardedHeaders:
-      # Reuse list of Cloudflare Trusted IP's above for HTTPS requests
       trustedIPs: *trustedIps
     http:
       middlewares:
