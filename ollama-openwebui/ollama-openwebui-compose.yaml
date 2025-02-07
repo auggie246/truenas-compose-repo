@@ -13,6 +13,7 @@ services:
     volumes:
       - ${STACKS_DIR}/ollama:/root/.ollama
 #      - ${MODELS_DIR}:/root/.ollama/models
+    tty: true
     deploy:
       resources:
         reservations:
