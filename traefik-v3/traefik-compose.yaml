@@ -19,6 +19,7 @@ services:
       - 81:81 # external http
       - 443:443
       - 444:444 # external https
+      - 8181:8080 ## disable when disabling insecure in traefik.yaml
     # - 10000:10000 # optional - wireguard
     # - 33073:33073 # optional
     environment:
