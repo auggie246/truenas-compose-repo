@@ -48,7 +48,7 @@ services:
       - "traefik.http.routers.open-webui-secure.rule=Host(`ollama.YOUR_DOMAIN.co.uk`)"
       - "traefik.http.routers.open-webui-secure.tls=true"
       - "traefik.http.routers.open-webui-secure.service=open-webui"
-      - "traefik.http.services.open-webui.loadbalancer.server.port=8096"
+      - "traefik.http.services.open-webui.loadbalancer.server.port=${PORT}"
       - "traefik.docker.network=proxy"
 
 networks:
