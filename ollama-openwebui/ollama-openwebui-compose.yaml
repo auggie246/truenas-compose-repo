@@ -33,7 +33,6 @@ services:
       - ${OPEN_WEBUI_PORT-3000}:${PORT}
     environment:
       - 'OLLAMA_BASE_URL=http://ollama:11434'
-      - 'WEBUI_SECRET_KEY='
     env_file: ".env"
     extra_hosts:
       - host.docker.internal:host-gateway
