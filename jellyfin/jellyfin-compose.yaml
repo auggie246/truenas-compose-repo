@@ -1,0 +1,292 @@
+configs:
+  permissions_actions_data:
+    content: '[{"mount_path": "/mnt/permission/transcodes", "is_temporary": true,
+      "identifier": "transcodes", "recursive": true, "mode": "check", "uid":
+      568, "gid": 568, "chmod": null}]'
+  permissions_run_script:
+    content: >
+      #!/usr/bin/env python3
+
+
+      import os
+
+      import json
+
+      import time
+
+      import shutil
+
+
+      with open("/script/actions.json", "r") as f:
+          actions_data = json.load(f)
+
+      if not actions_data:
+          # If this script is called, there should be actions data
+          raise ValueError("No actions data found")
+
+      def fix_perms(path, chmod, recursive=False):
+          print(f"Changing permissions{' recursively ' if recursive else ' '}to {chmod} on: [{path}]")
+          os.chmod(path, int(chmod, 8))
+          if recursive:
+              for root, dirs, files in os.walk(path):
+                  for f in files:
+                      os.chmod(os.path.join(root, f), int(chmod, 8))
+          print("Permissions after changes:")
+          print_chmod_stat()
+
+      def fix_owner(path, uid, gid, recursive=False):
+          print(f"Changing ownership{' recursively ' if recursive else ' '}to {uid}:{gid} on: [{path}]")
+          os.chown(path, uid, gid)
+          if recursive:
+              for root, dirs, files in os.walk(path):
+                  for f in files:
+                      os.chown(os.path.join(root, f), uid, gid)
+          print("Ownership after changes:")
+          print_chown_stat()
+
+      def print_chown_stat():
+          curr_stat = os.stat(action["mount_path"])
+          print(f"Ownership: [{curr_stat.st_uid}:{curr_stat.st_gid}]")
+
+      def print_chmod_stat():
+          curr_stat = os.stat(action["mount_path"])
+          print(f"Permissions: [{oct(curr_stat.st_mode)[3:]}]")
+
+      def print_chown_diff(curr_stat, uid, gid):
+          print(f"Ownership: wanted [{uid}:{gid}], got [{curr_stat.st_uid}:{curr_stat.st_gid}].")
+
+      def print_chmod_diff(curr_stat, mode):
+          print(f"Permissions: wanted [{mode}], got [{oct(curr_stat.st_mode)[3:]}].")
+
+      def perform_action(action):
+          start_time = time.time()
+          print(f"=== Applying configuration on volume with identifier [{action['identifier']}] ===")
+
+          if not os.path.isdir(action["mount_path"]):
+              print(f"Path [{action['mount_path']}] is not a directory, skipping...")
+              return
+
+          if action["is_temporary"]:
+              print(f"Path [{action['mount_path']}] is a temporary directory, ensuring it is empty...")
+              for item in os.listdir(action["mount_path"]):
+                  item_path = os.path.join(action["mount_path"], item)
+
+                  # Exclude the safe directory, where we can use to mount files temporarily
+                  if os.path.basename(item_path) == "ix-safe":
+                      continue
+                  if os.path.isdir(item_path):
+                      shutil.rmtree(item_path)
+                  else:
+                      os.remove(item_path)
+
+          if not action["is_temporary"] and os.listdir(action["mount_path"]):
+              print(f"Path [{action['mount_path']}] is not empty, skipping...")
+              return
+
+          print(f"Current Ownership and Permissions on [{action['mount_path']}]:")
+          curr_stat = os.stat(action["mount_path"])
+          print_chown_diff(curr_stat, action["uid"], action["gid"])
+          print_chmod_diff(curr_stat, action["chmod"])
+          print("---")
+
+          if action["mode"] == "always":
+              fix_owner(action["mount_path"], action["uid"], action["gid"], action["recursive"])
+              if not action["chmod"]:
+                  print("Skipping permissions check, chmod is falsy")
+              else:
+                  fix_perms(action["mount_path"], action["chmod"], action["recursive"])
+              return
+
+          elif action["mode"] == "check":
+              if curr_stat.st_uid != action["uid"] or curr_stat.st_gid != action["gid"]:
+                  print("Ownership is incorrect. Fixing...")
+                  fix_owner(action["mount_path"], action["uid"], action["gid"], action["recursive"])
+              else:
+                  print("Ownership is correct. Skipping...")
+
+              if not action["chmod"]:
+                  print("Skipping permissions check, chmod is falsy")
+              else:
+                  if oct(curr_stat.st_mode)[3:] != action["chmod"]:
+                      print("Permissions are incorrect. Fixing...")
+                      fix_perms(action["mount_path"], action["chmod"], action["recursive"])
+                  else:
+                      print("Permissions are correct. Skipping...")
+
+          print(f"Time taken: {(time.time() - start_time) * 1000:.2f}ms")
+          print(f"=== Finished applying configuration on volume with identifier [{action['identifier']}] ==")
+          print()
+
+      if __name__ == "__main__":
+          start_time = time.time()
+          for action in actions_data:
+              perform_action(action)
+          print(f"Total time taken: {(time.time() - start_time) * 1000:.2f}ms")
+services:
+  jellyfin:
+    cap_drop:
+      - ALL
+    depends_on:
+      permissions:
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          memory: 16384M
+    devices:
+      - /dev/dri:/dev/dri
+    environment:
+      GID: "568"
+      GROUP_ID: "568"
+      NVIDIA_VISIBLE_DEVICES: void
+      PGID: "568"
+      PUID: "568"
+      TZ: Asia/Singapore
+      UID: "568"
+      UMASK: "002"
+      UMASK_SET: "002"
+      USER_ID: "568"
+    group_add:
+      - 44
+      - 107
+      - 568
+    healthcheck:
+      interval: 10s
+      retries: 30
+      start_period: 10s
+      test: curl --silent --output /dev/null --show-error --fail
+        http://127.0.0.1:8096/health
+      timeout: 5s
+    image: jellyfin/jellyfin:10.10.5
+    platform: linux/amd64
+    networks:
+      - proxy    
+    # ports:
+    #   - mode: ingress
+    #     protocol: tcp
+    #     published: 30013
+    #     target: 8096
+    privileged: false
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges
+    stdin_open: false
+    tty: false
+    user: 568:568
+    volumes:
+      - bind:
+          create_host_path: false
+          propagation: rprivate
+        read_only: false
+        source: /mnt/NVME/jellyfin-cache
+        target: /cache
+        type: bind
+      - bind:
+          create_host_path: false
+          propagation: rprivate
+        read_only: false
+        source: /mnt/NVME/jellyfin-config
+        target: /config
+        type: bind
+      - read_only: false
+        source: jellyfin-transcodes
+        target: /config/transcodes
+        type: volume
+        volume:
+          nocopy: false
+      - read_only: false
+        source: cifs_508c70ac92021d3991c1ad0eabd9602a194520f2ad073a97ed8a35ad1c6e737c
+        target: /home/jellyfin/Movies
+        type: volume
+        volume:
+          nocopy: false
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jellyfin.entrypoints=http"
+      - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.YOUR_DOMAIN.co.uk`)"
+      - "traefik.http.middlewares.jellyfin-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.jellyfin.middlewares=jellyfin-https-redirect"
+      - "traefik.http.routers.jellyfin-secure.entrypoints=https"
+      - "traefik.http.routers.jellyfin-secure.rule=Host(`jellyfin.YOUR_DOMAIN.co.uk`)"
+      - "traefik.http.routers.jellyfin-secure.tls=true"
+      - "traefik.http.routers.jellyfin-secure.service=jellyfin"
+      - "traefik.http.services.jellyfin.loadbalancer.server.port=8096"
+      - "traefik.docker.network=proxy"
+  permissions:
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+    cap_drop:
+      - ALL
+    configs:
+      - mode: 320
+        source: permissions_actions_data
+        target: /script/actions.json
+      - mode: 448
+        source: permissions_run_script
+        target: /script/run.py
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 1024M
+    entrypoint:
+      - python3
+      - /script/run.py
+    environment:
+      GID: "568"
+      GROUP_ID: "568"
+      NVIDIA_VISIBLE_DEVICES: void
+      PGID: "568"
+      PUID: "568"
+      TZ: Asia/Singapore
+      UID: "568"
+      UMASK: "002"
+      UMASK_SET: "002"
+      USER_ID: "568"
+    group_add:
+      - 568
+    healthcheck:
+      disable: true
+    image: python:3.13.0-slim-bookworm
+    network_mode: none
+    platform: linux/amd64
+    privileged: false
+    restart: on-failure:1
+    security_opt:
+      - no-new-privileges
+    stdin_open: false
+    tty: false
+    user: 0:0
+    volumes:
+      - read_only: false
+        source: jellyfin-transcodes
+        target: /mnt/permission/transcodes
+        type: volume
+        volume:
+          nocopy: false
+volumes:
+  cifs_508c70ac92021d3991c1ad0eabd9602a194520f2ad073a97ed8a35ad1c6e737c:
+    driver_opts:
+      device: //creed-server.local/Movies
+      o: noperm,password=143928,user=augustine
+      type: cifs
+  jellyfin-transcodes: {}
+
+
+x-portals:
+  - host: 0.0.0.0
+    name: Web UI
+    path: /
+    port: 30013
+    scheme: http
+networks:
+  proxy:
+    external: true
+
+
+
+
+
