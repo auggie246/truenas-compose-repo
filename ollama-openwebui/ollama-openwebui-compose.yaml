@@ -37,7 +37,7 @@ services:
       - host.docker.internal:host-gateway
     restart: unless-stopped
     networks: 
-      - proxy_network
+      - proxy
     labels:
       - traefik.enable=true
       - traefik.http.routers.open-webui.rule=Host(`chatbot.auggie.space`)
@@ -47,7 +47,7 @@ services:
       - traefik.http.routers.open-webui.tls=true
 
 networks:
-  proxy_network:
+  proxy:
     external: true    
   
   # pipelines:
