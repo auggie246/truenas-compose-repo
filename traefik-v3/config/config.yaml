@@ -22,7 +22,16 @@ http: # extra config for handling ssl termination for better security
         address: http://bouncer-traefik:8080/api/v1/forwardAuth
         trustForwardHeader: true
 
-  # routers:
+  routers:
+    jellyfin:
+      entryPoints:
+        - "https"
+      rule: "Host(`jellyfin.auggie.space`)"
+      middlewares:
+        - default-security-headers
+        - https-redirectscheme
+      tls: {}
+      service: jellyfin
   #   portainer:
   #     entryPoints:
   #       - "https"
@@ -33,7 +42,12 @@ http: # extra config for handling ssl termination for better security
   #     tls: {}
   #     service: portainer
 
-  # services:
+  services:
+    jellyfin:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.1.131:30013"
+        passHostHeader: true
   #   portainer:
   #     loadBalancer:
   #       servers:
