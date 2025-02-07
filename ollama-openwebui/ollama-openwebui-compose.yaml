@@ -14,6 +14,8 @@ services:
       - ${STACKS_DIR}/ollama:/root/.ollama
 #      - ${MODELS_DIR}:/root/.ollama/models
     tty: true
+    networks: 
+      - proxy
     deploy:
       resources:
         reservations:
