@@ -39,12 +39,17 @@ services:
     networks: 
       - proxy
     labels:
-      - traefik.enable=true
-      - traefik.http.routers.open-webui.rule=Host(`chatbot.auggie.space`)
-      - traefik.http.routers.open-webui.entrypoints=websecure
-      - traefik.http.services.open-webui.loadbalancer.server.port=8282
-      - traefik.http.routers.open-webui.tls.certresolver=production
-      - traefik.http.routers.open-webui.tls=true
+      - "traefik.enable=true"
+      - "traefik.http.routers.open-webui.entrypoints=http-external"
+      - "traefik.http.routers.open-webui.rule=Host(`ollama.YOUR_DOMAIN.co.uk`)"
+      - "traefik.http.middlewares.open-webui-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.open-webui.middlewares=open-webui-https-redirect"
+      - "traefik.http.routers.open-webui-secure.entrypoints=https-external"
+      - "traefik.http.routers.open-webui-secure.rule=Host(`ollama.YOUR_DOMAIN.co.uk`)"
+      - "traefik.http.routers.open-webui-secure.tls=true"
+      - "traefik.http.routers.open-webui-secure.service=open-webui"
+      - "traefik.http.services.open-webui.loadbalancer.server.port=8096"
+      - "traefik.docker.network=proxy"
 
 networks:
   proxy:
