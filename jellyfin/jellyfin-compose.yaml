@@ -203,11 +203,11 @@ services:
           nocopy: false
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.jellyfin.entrypoints=http"
+      - "traefik.http.routers.jellyfin.entrypoints=http-external"
       - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.YOUR_DOMAIN.co.uk`)"
       - "traefik.http.middlewares.jellyfin-https-redirect.redirectscheme.scheme=https"
       - "traefik.http.routers.jellyfin.middlewares=jellyfin-https-redirect"
-      - "traefik.http.routers.jellyfin-secure.entrypoints=https"
+      - "traefik.http.routers.jellyfin-secure.entrypoints=https-external"
       - "traefik.http.routers.jellyfin-secure.rule=Host(`jellyfin.YOUR_DOMAIN.co.uk`)"
       - "traefik.http.routers.jellyfin-secure.tls=true"
       - "traefik.http.routers.jellyfin-secure.service=jellyfin"
@@ -285,8 +285,3 @@ x-portals:
 networks:
   proxy:
     external: true
-
-
-
-
-
