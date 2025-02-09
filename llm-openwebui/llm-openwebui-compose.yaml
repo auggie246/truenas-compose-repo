@@ -1,0 +1,92 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    # Uncomment below to expose Ollama API outside the container stack
+    # ports:
+    #   - ${OLLAMA_PORT}:11434
+    restart: unless-stopped
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_KEEP_ALIVE=24h
+      - OLLAMA_MODELS=/root/models
+    env_file: ".env"
+    volumes:
+      - ${STACKS_DIR}/ollama:/root/.ollama
+      - ${MODELS_DIR}:/root/models
+    tty: true
+    networks: 
+      - proxy
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 2
+              capabilities: [gpu]
+
+  # vllm-openai-vl2:
+  #   container_name: vllm
+  #   image: vllm/vllm-openai:${VLLM_DOCKER_TAG-latest}
+  #   restart: unless-stopped
+  #   tty: true
+  #   networks: 
+  #     - proxy
+  #   # Uncomment below to expose VLLM API outside the container stack
+  #   # ports:
+  #   #   - ${VLLM_PORT}:8000
+  #   ipc: host
+  # volumes:
+  #     - ${LOCAL_HF_HOME}:/root/.cache/huggingface
+  #     - ${STACKS_DIR}/template_deepseek_vl2.jinja:/root/template_deepseek_vl2.jinja
+  #   environment:
+  #     - HF_HUB_ENABLE_HF_TRANSFER=0
+  #   env_file: ".env"
+  #   runtime: nvidia
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 2
+  #             capabilities: [gpu]
+  #   command: >
+  #     --model deepseek-ai/deepseek-vl2-tiny
+  #     --hf_overrides '{"architectures":["DeepseekVLV2ForCausalLM"]}' 
+  #     --chat-template /root/template_deepseek_vl2.jinja
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:${WEBUI_DOCKER_TAG-main}
+    container_name: open-webui
+    volumes:
+      - ${STACKS_DIR}/open-webui:/app/backend/data
+    depends_on:
+      - ollama
+    ports:
+      - ${OPEN_WEBUI_PORT-3000}:${PORT}
+    environment:
+      - 'OLLAMA_BASE_URL=http://ollama:11434'
+      - 'OPENAI_API_BASE_URL=http://vllm-openai-vl2:8000/v1'
+    env_file: ".env"
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    restart: unless-stopped
+    networks: 
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.open-webui.entrypoints=http-external"
+      - "traefik.http.routers.open-webui.rule=Host(`chatbot.YOUR_DOMAIN.co.uk`)"
+      - "traefik.http.middlewares.open-webui-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.open-webui.middlewares=open-webui-https-redirect"
+      - "traefik.http.routers.open-webui-secure.entrypoints=https-external"
+      - "traefik.http.routers.open-webui-secure.rule=Host(`chatbot.YOUR_DOMAIN.co.uk`)"
+      - "traefik.http.routers.open-webui-secure.tls=true"
+      - "traefik.http.routers.open-webui-secure.service=open-webui"
+      - "traefik.http.services.open-webui.loadbalancer.server.port=${PORT}"
+      - "traefik.docker.network=proxy"
+
+networks:
+  proxy:
+    external: true    
+  
