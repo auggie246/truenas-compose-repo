@@ -2,7 +2,7 @@ http: # extra config for handling ssl termination for better security
   middlewares:    
     default-security-headers:
       headers:
-        browserXssFilter: true                            # X-XSS-Protection=1; mode=block
+        customBrowserXSSValue: 0                           # X-XSS-Protection=1; mode=block
         contentTypeNosniff: true                          # X-Content-Type-Options=nosniff
         forceSTSHeader: true                              # Add the Strict-Transport-Security header even when the connection is HTTP
         frameDeny: false                                   # X-Frame-Options=deny
@@ -53,4 +53,3 @@ http: # extra config for handling ssl termination for better security
   #       servers:
   #         - url: "https://192.168.200.122:9443"
   #       passHostHeader: true
-    
