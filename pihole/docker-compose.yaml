@@ -21,8 +21,8 @@ services:
       - .env
     # Volumes store your data between container upgrades
     volumes:
-      - '/home/ubuntu/docker/pihole/:/etc/pihole/'
-      - '/home/ubuntu/docker/pihole/etc-dnsmasq.d/:/etc/dnsmasq.d/'
+      - ${STACKS_DIR}:/etc/pihole
+      - ${STACKS_DIR}/etc-dnsmasq.d/:/etc/dnsmasq.d/
     # Recommended but not required (DHCP needs NET_ADMIN)
     #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
     #cap_add:
