@@ -14,10 +14,11 @@ services:
       proxy:
     environment:
       TZ: 'Asia/Singapore'
-      WEBPASSWORD: 'password'
       PIHOLE_DNS_: '172.70.9.2#5053'
       DNSMASQ_LISTENING: 'all'
       VIRTUAL_HOST: pihole.yourdomain.com
+    env_file:
+      - .env
     # Volumes store your data between container upgrades
     volumes:
       - '/home/ubuntu/docker/pihole/:/etc/pihole/'
