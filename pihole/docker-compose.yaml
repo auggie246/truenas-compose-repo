@@ -25,8 +25,8 @@ services:
       - ${STACKS_DIR}/etc-dnsmasq.d/:/etc/dnsmasq.d/
     # Recommended but not required (DHCP needs NET_ADMIN)
     #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
-    #cap_add:
-    #  - NET_ADMIN
+    cap_add:
+      - NET_ADMIN
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
