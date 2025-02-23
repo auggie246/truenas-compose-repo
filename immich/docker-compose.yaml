@@ -20,6 +20,19 @@ services:
     restart: always
     healthcheck:
       disable: false
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.immich-server.entrypoints=http-external"
+      - "traefik.http.routers.immich-server.rule=Host(`immich.YOUR_DOMAIN.co.uk`)"
+      - "traefik.http.middlewares.immich-server-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.immich-server.middlewares=immich-server-https-redirect"
+      - "traefik.http.routers.immich-server-secure.entrypoints=https-external"
+      - "traefik.http.routers.immich-server-secure.rule=Host(`immich.YOUR_DOMAIN.co.uk`)"
+      - "traefik.http.routers.immich-server-secure.tls=true"
+      - "traefik.http.routers.immich-server-secure.service=immich-server"
+      - "traefik.http.services.immich-server.loadbalancer.server.port=2283"
+      - "traefik.docker.network=proxy"
+
 
   immich-machine-learning:
     container_name: immich_machine_learning
