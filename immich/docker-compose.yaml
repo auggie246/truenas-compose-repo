@@ -21,23 +21,6 @@ services:
     healthcheck:
       disable: false
 
-## WHAT IS THIS USE FOR?
-  immich-microservices:
-    container_name: immich_microservices
-    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
-    extends:
-      file: hwaccel.yml
-      service: hwaccel
-    command: [ "start.sh", "microservices" ]
-    volumes:
-      - /mnt/NAS/immich/upload:/usr/src/app/upload
-    env_file:
-      - .env
-    depends_on:
-      - redis
-      - database
-    restart: always
-
   immich-machine-learning:
     container_name: immich_machine_learning
     # For hardware acceleration, add one of -[armnn, cuda, openvino] to the image tag.
