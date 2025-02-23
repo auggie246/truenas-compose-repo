@@ -14,6 +14,8 @@ services:
       - .env
     ports:
       - 2283:2283
+    networks: 
+      - proxy
     depends_on:
       - redis
       - database
@@ -90,4 +92,6 @@ services:
       -c wal_compression=on
     restart: always
 
-## there is a known issue with Traefik: see here https://github.com/immich-app/immich/discussions/437#discussioncomment-3609797
+networks:
+  proxy:
+    external: true    
