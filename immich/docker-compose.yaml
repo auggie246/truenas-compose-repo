@@ -16,6 +16,7 @@ services:
       - 2283:2283
     networks: 
       - proxy
+      - immich_internal
     depends_on:
       - redis
       - database
@@ -48,6 +49,8 @@ services:
       - ${MODEL_CACHE_LOCATION}:/cache
     env_file:
       - .env
+    networks:
+      - immich_internal
     restart: always
     healthcheck:
       disable: false
@@ -58,6 +61,8 @@ services:
     healthcheck:
       test: redis-cli ping || exit 1
     restart: always
+    networks:
+      - immich_internal
 
   database:
     container_name: immich_postgres
@@ -91,7 +96,12 @@ services:
       -c shared_buffers=512MB
       -c wal_compression=on
     restart: always
+    networks:
+      - immich_internal
 
 networks:
+  immich_internal:
+    name: immich_internal
+    internal: true
   proxy:
     external: true    
