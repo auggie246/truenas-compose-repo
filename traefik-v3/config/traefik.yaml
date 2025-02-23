@@ -60,6 +60,11 @@ entryPoints:
         entrypoint:
           to: https-external
           scheme: https
+    transport:
+      respondingTimeouts:
+        readTimeout: 600s
+        idleTimeout: 600s
+        writeTimeout: 600s
   https-external:
     address: ":444"
     forwardedHeaders:
@@ -67,6 +72,11 @@ entryPoints:
     http:
       middlewares:
         - crowdsec-bouncer@file
+    transport:
+      respondingTimeouts:
+        readTimeout: 600s
+        idleTimeout: 600s
+        writeTimeout: 600s
   # tcp:
    # address: ":10000"
   # apis:
