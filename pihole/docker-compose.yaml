@@ -28,6 +28,11 @@ services:
     cap_add:
       - NET_ADMIN
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.pihole.entrypoints=http"
