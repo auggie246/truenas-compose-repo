@@ -3,26 +3,26 @@ services:
     container_name: pihole
     image: pihole/pihole:latest
     ports:
-      - "53:53/tcp"
-      - "53:53/udp"
-      - "67:67/udp"
-      - "500:80/tcp"
+      - "53:53/tcp" # DNS
+      - "53:53/udp" # DNS
+      - "67:67/udp" # DHCP
+      - "8888:8888/tcp" # web interface
     #  - "443:443/tcp"
     networks:
-      pihole_internal:
-        ipv4_address: 172.70.9.3
+    #   pihole_internal:
+    #     ipv4_address: 172.70.9.3
       proxy:
     environment:
       TZ: 'Asia/Singapore'
-      PIHOLE_DNS_: '172.70.9.2#5053'
+      PIHOLE_DNS_: 9.9.9.9;149.112.112.112;1.1.1.1;1.0.0.1 # Quad9 and Cloudflare
       DNSMASQ_LISTENING: 'all'
-      VIRTUAL_HOST: pihole.yourdomain.com
     env_file:
       - .env
     # Volumes store your data between container upgrades
     volumes:
       - ${STACKS_DIR}:/etc/pihole
       - ${STACKS_DIR}/etc-dnsmasq.d/:/etc/dnsmasq.d/
+      - ${STACKS_DIR}/custom-port.conf:/etc/lighttpd/conf-enabled/20-custom-port.conf
     # Recommended but not required (DHCP needs NET_ADMIN)
     #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
     # cap_add:
@@ -45,12 +45,15 @@ services:
       - "traefik.http.routers.pihole-secure.service=pihole"
       - "traefik.http.services.pihole.loadbalancer.server.port=${PORT}"
       - "traefik.docker.network=proxy"
+      - "traefik.http.middlewares.pihole-addprefix.addprefix.prefix=/admin"
+      - "traefik.http.middlewares.pihole-redirectregex.redirectregex.regex=/admin/$"
+      - "traefik.http.middlewares.pihole-redirectregex.redirectregex.replacement=/"
 
 networks:
-  pihole_internal:
-     ipam:
-       config:
-         - subnet: 172.70.9.0/29
-     name: pihole_internal
+  # pihole_internal:
+  #    ipam:
+  #      config:
+  #        - subnet: 172.70.9.0/29
+  #    name: pihole_internal
   proxy:
     external: true
