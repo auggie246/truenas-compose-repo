@@ -1,0 +1,104 @@
+services:
+  jellyseerr:
+    container_name: jellyseerr
+    image: ghcr.io/fallenbagel/jellyseerr:latest
+    restart: unless-stopped
+    user: 568:568
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - TZ=${TIMEZONE:-Asia/Singapore}
+      - PORT=5055
+    networks:
+      - mediarr
+    ports:
+      - 5055:5055
+    volumes:
+      - ./configs/mediarr/jellyseerr:/app/config
+    depends_on:
+      - sonarr
+      - radarr
+  sonarr:
+    image: ghcr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    hostname: sonarr
+    networks:
+      - mediarr
+    environment:
+      - PUID=568
+      - PGID=568
+      - TZ=${TIMEZONE:-Asia/Singapore}
+    volumes:
+      - ./configs/mediarr/sonarr:/config
+      - myMedia:/mnt/media
+      - myDlFolders:/mnt/downloads
+    depends_on:
+      - prowlarr
+    ports:
+      - 8989:8989
+    restart: unless-stopped
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    hostname: radarr
+    networks:
+      - mediarr
+    environment:
+      - PUID=568
+      - PGID=568
+      - TZ=${TIMEZONE:-Asia/Singapore}
+    volumes:
+      - ./configs/mediarr/radarr:/config
+      - myMedia:/mnt/media
+      - myDlFolders:/mnt/downloads
+    ports:
+      - 7878:7878
+    restart: unless-stopped
+    depends_on:
+      - prowlarr
+  prowlarr:
+    image: linuxserver/prowlarr:latest
+    container_name: prowlarr
+    hostname: prowlarr
+    networks:
+      - mediarr
+    environment:
+      - PUID=568
+      - PGID=568
+      - TZ=${TIMEZONE:-Asia/Singapore}
+    volumes:
+      - ./configs/mediarr/prowlarr:/config
+    ports:
+      - 9696:9696
+    restart: unless-stopped
+    depends_on:
+      - flaresolverr
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    hostname: flaresolverr
+    networks:
+      - mediarr
+    env_file:
+      - .env
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_HTML=${LOG_HTML:-false}
+      - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
+      - TZ=${TIMEZONE:-Asia/Singapore}
+    restart: unless-stopped
+networks:
+  mediarr:
+    external: true
+volumes:
+  myMedia:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/media
+  myDlFolders:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/HDD/downloads
