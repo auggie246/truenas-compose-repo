@@ -158,15 +158,13 @@ services:
       test: curl --silent --output /dev/null --show-error --fail
         http://127.0.0.1:8096/health
       timeout: 5s
-    image: jellyfin/jellyfin:10.10.5
+    image: jellyfin/jellyfin:10.10.7
     platform: linux/amd64
     networks:
-      - proxy    
-    # ports:
-    #   - mode: ingress
-    #     protocol: tcp
-    #     published: 30013
-    #     target: 8096
+      - proxy
+      - mediarr
+    ports:
+      - 8096:8096
     privileged: false
     restart: unless-stopped
     security_opt:
@@ -196,23 +194,29 @@ services:
         volume:
           nocopy: false
       - read_only: false
-        source: cifs_508c70ac92021d3991c1ad0eabd9602a194520f2ad073a97ed8a35ad1c6e737c
+        source: cifs_movies
         target: /home/jellyfin/Movies
         type: volume
         volume:
           nocopy: false
+      - read_only: false
+        source: cifs_tvshows
+        target: /home/jellyfin/TV-Shows
+        type: volume
+        volume:
+          nocopy: false
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.jellyfin.entrypoints=http-external"
-      - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.YOUR_DOMAIN.co.uk`)"
-      - "traefik.http.middlewares.jellyfin-https-redirect.redirectscheme.scheme=https"
-      - "traefik.http.routers.jellyfin.middlewares=jellyfin-https-redirect"
-      - "traefik.http.routers.jellyfin-secure.entrypoints=https-external"
-      - "traefik.http.routers.jellyfin-secure.rule=Host(`jellyfin.YOUR_DOMAIN.co.uk`)"
-      - "traefik.http.routers.jellyfin-secure.tls=true"
-      - "traefik.http.routers.jellyfin-secure.service=jellyfin"
-      - "traefik.http.services.jellyfin.loadbalancer.server.port=8096"
-      - "traefik.docker.network=proxy"
+      - traefik.enable=true
+      - traefik.http.routers.jellyfin.entrypoints=http-external
+      - traefik.http.routers.jellyfin.rule=Host(`jellyfin.domain.com`)
+      - traefik.http.middlewares.jellyfin-https-redirect.redirectscheme.scheme=https
+      - traefik.http.routers.jellyfin.middlewares=jellyfin-https-redirect
+      - traefik.http.routers.jellyfin-secure.entrypoints=https-external
+      - traefik.http.routers.jellyfin-secure.rule=Host(`jellyfin.domain.com`)
+      - traefik.http.routers.jellyfin-secure.tls=true
+      - traefik.http.routers.jellyfin-secure.service=jellyfin
+      - traefik.http.services.jellyfin.loadbalancer.server.port=8096
+      - traefik.docker.network=proxy
   permissions:
     cap_add:
       - CHOWN
@@ -268,14 +272,17 @@ services:
         volume:
           nocopy: false
 volumes:
-  cifs_508c70ac92021d3991c1ad0eabd9602a194520f2ad073a97ed8a35ad1c6e737c:
+  cifs_movies:
     driver_opts:
-      device: //creed-server.local/Movies
+      device: //creed-server.local/data/media/movies
+      o: noperm,password=143928,user=augustine
+      type: cifs
+  cifs_tvshows:
+    driver_opts:
+      device: //creed-server.local/data/media/tv
       o: noperm,password=143928,user=augustine
       type: cifs
   jellyfin-transcodes: {}
-
-
 x-portals:
   - host: 0.0.0.0
     name: Web UI
@@ -284,4 +291,6 @@ x-portals:
     scheme: http
 networks:
   proxy:
+    external: true
+  mediarr:
     external: true
