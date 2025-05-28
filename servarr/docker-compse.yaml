@@ -71,11 +71,14 @@ services:
       - 9696:9696
     restart: unless-stopped
     depends_on:
-      - flaresolverr
-  flaresolverr:
-    image: ghcr.io/flaresolverr/flaresolverr:latest
-    container_name: flaresolverr
-    hostname: flaresolverr
+      - byparr
+  byparr:
+    container_name: byparr
+    hostname: byparr
+    image: ghcr.io/thephaseless/byparr:latest
+    shm_size: 2gb
+    volumes:
+      - ./configs/mediarr/byparr/screenshots:/app/screenshots
     networks:
       - mediarr
     env_file:
