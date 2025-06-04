@@ -132,6 +132,9 @@ services:
       # Timezone for accurate log times
       - TZ=${TIMEZONE:-Asia/Singapore}
     restart: unless-stopped
+    networks:
+      gluetun-network:
+        ipv4_address: 172.16.11.10
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
     container_name: qbittorrent
@@ -149,5 +152,11 @@ services:
     network_mode: service:gluetun
     restart: unless-stopped
 networks:
+  gluetun-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.16.11.0/24
+          gateway: 172.16.11.254
   mediarr:
     external: true
