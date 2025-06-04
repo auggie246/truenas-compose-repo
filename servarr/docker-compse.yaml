@@ -111,7 +111,7 @@ services:
       - TZ=${TIMEZONE:-Asia/Singapore}
     restart: unless-stopped
   gluetun:
-    image: qmcgaw/gluetun
+    image: ghcr.io/qdm12/gluetun:latest
     container_name: gluetun
     cap_add:
       - NET_ADMIN
