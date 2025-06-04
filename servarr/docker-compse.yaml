@@ -29,7 +29,7 @@ services:
       - TZ=${TIMEZONE:-Asia/Singapore}
     volumes:
       - ./configs/mediarr/sonarr:/config
-      - myData:/data
+      - /mnt/NAS/data/:/data/
     depends_on:
       - prowlarr
       - qbittorrent
@@ -48,7 +48,7 @@ services:
       - TZ=${TIMEZONE:-Asia/Singapore}
     volumes:
       - ./configs/mediarr/radarr:/config
-      - myData:/data
+      - /mnt/NAS/data/:/data/
     ports:
       - 7878:7878
     restart: unless-stopped
@@ -124,28 +124,9 @@ services:
       - TORRENTING_PORT=6881
     volumes:
       - ./gluetun/appdata:/config
-      - myTorrents:/data/torrents/
+      - /mnt/NAS/data/torrents/:/data/torrents/
     network_mode: service:gluetun
     restart: unless-stopped
 networks:
   mediarr:
     external: true
-volumes:
-  myData:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /mnt/NAS/data
-  myMedia:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /mnt/NAS/data/media
-  myTorrents:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /mnt/NAS/data/torrents
