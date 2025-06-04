@@ -151,6 +151,30 @@ services:
       - /mnt/NAS/data/torrents/:/data/torrents/
     network_mode: service:gluetun
     restart: unless-stopped
+  qbittorrent-natmap:
+    image: ghcr.io/soxfor/qbittorrent-natmap:latest
+    container_name: qbittorrent-natmap
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    env_file:
+      - .env
+    environment:
+      - TZ=${TIMEZONE:-Asia/Singapore}
+      - QBITTORRENT_SERVER=10.2.0.2
+      - QBITTORRENT_SERVER_HTTP_OR_HTTPS=http
+      - VPN_GATEWAY=10.2.0.1
+      - VPN_CT_NAME=gluetun
+      - VPN_IF_NAME=tun0
+      - CHECK_INTERVAL=300
+      - NAT_LEASE_LIFETIME=300
+      - IPTABLES_PATH=/sbin/iptables-legacy
+    network_mode: service:gluetun
+    depends_on:
+      qbittorrent:
+        condition: service_started
+      gluetun:
+        condition: service_healthy
 networks:
   gluetun-network:
     driver: bridge
