@@ -130,7 +130,7 @@ services:
       - .env
     environment:
       # Timezone for accurate log times
-      - TZ=Asia/Singapore
+      - TZ=${TIMEZONE:-Asia/Singapore}
     restart: unless-stopped
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
