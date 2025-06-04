@@ -55,6 +55,25 @@ services:
     depends_on:
       - prowlarr
       - qbittorrent
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    hostname: bazarr
+    networks:
+      - mediarr
+    environment:
+      - PUID=568
+      - PGID=568
+      - TZ=${TIMEZONE:-Asia/Singapore}
+    volumes:
+      - ./configs/mediarr/bazarr:/config
+      - /mnt/NAS/data/:/data/
+    ports:
+      - 6767:6767
+    restart: unless-stopped
+    depends_on:
+      - sonarr
+      - radarr
   prowlarr:
     image: linuxserver/prowlarr:latest
     container_name: prowlarr
