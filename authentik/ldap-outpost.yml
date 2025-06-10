@@ -1,0 +1,19 @@
+services:
+  authentik_ldap:
+    image: ghcr.io/goauthentik/ldap:${AUTHENTIK_TAG:-2025.6.0}
+    # Optionally specify which networks the container should be
+    # might be needed to reach the core authentik server
+    networks:
+      - authentik
+    ports:
+      - 389:3389
+      - 636:6636
+    environment:
+      AUTHENTIK_HOST: http://authentik:9000/
+      AUTHENTIK_INSECURE: "false"
+    env_file:
+      - .env
+    restart: unless-stopped
+networks:
+  authentik:
+    external: true
