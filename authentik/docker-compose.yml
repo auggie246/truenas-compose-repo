@@ -1,11 +1,11 @@
----
-
 services:
   postgresql:
     image: docker.io/library/postgres:16-alpine
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      test:
+        - CMD-SHELL
+        - pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}
       start_period: 20s
       interval: 30s
       retries: 5
@@ -19,13 +19,15 @@ services:
     env_file:
       - .env
     networks:
-      - proxy
+      - authentik
   redis:
     image: docker.io/library/redis:alpine
     command: --save 60 1 --loglevel warning
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      test:
+        - CMD-SHELL
+        - redis-cli ping | grep PONG
       start_period: 20s
       interval: 30s
       retries: 5
@@ -33,11 +35,14 @@ services:
     volumes:
       - redis:/data
     networks:
-      - proxy
+      - authentik
   server:
-    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2025.2.4}
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2025.6.0}
     restart: unless-stopped
     command: server
+    hostname: authentik
+    networks:
+      - authentik
     environment:
       AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:?secret key required}
       AUTHENTIK_REDIS__HOST: redis
@@ -51,30 +56,15 @@ services:
     env_file:
       - .env
     ports:
-      - "${COMPOSE_PORT_HTTP:-9000}:9000"
-      - "${COMPOSE_PORT_HTTPS:-9443}:9443"
+      - ${COMPOSE_PORT_HTTP:-9000}:9000
+      - ${COMPOSE_PORT_HTTPS:-9443}:9443
     depends_on:
       postgresql:
         condition: service_healthy
       redis:
         condition: service_healthy
-    networks:
-      - proxy
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.authentik.entrypoints=http
-      - traefik.http.routers.authentik.rule=Host(`$AUTHENTIK_HOST_URL`)
-      - traefik.http.middlewares.authentik-https-redirect.redirectscheme.scheme=https
-      - traefik.http.routers.authentik.middlewares=authentik-https-redirect
-      - traefik.http.routers.authentik-secure.entrypoints=https
-      - traefik.http.routers.authentik-secure.rule=Host(`$AUTHENTIK_HOST_URL`)
-      - traefik.http.routers.authentik-secure.tls=true
-      - traefik.http.routers.authentik-secure.service=authentik
-      - traefik.http.services.authentik.loadbalancer.server.scheme=https
-      - traefik.http.services.authentik.loadbalancer.server.port=${COMPOSE_PORT_HTTPS}
-      - traefik.docker.network=proxy
   worker:
-    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2025.2.4}
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2025.6.0}
     restart: unless-stopped
     command: worker
     environment:
@@ -104,14 +94,12 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - proxy
-
+      - authentik
 volumes:
   database:
     driver: local
   redis:
     driver: local
-
 networks:
-  proxy:
+  authentik:
     external: true
