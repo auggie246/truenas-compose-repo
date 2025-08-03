@@ -1,7 +1,7 @@
 services:
   jellyseerr:
     container_name: jellyseerr
-    image: ghcr.io/fallenbagel/jellyseerr:latest
+    image: ghcr.io/fallenbagel/jellyseerr:2.7.2
     restart: unless-stopped
     user: 568:568
     environment:
@@ -18,7 +18,7 @@ services:
       - sonarr
       - radarr
   sonarr:
-    image: ghcr.io/linuxserver/sonarr:latest
+    image: ghcr.io/linuxserver/sonarr:version-4.0.15.2941
     container_name: sonarr
     hostname: sonarr
     networks:
@@ -37,7 +37,7 @@ services:
       - 8989:8989
     restart: unless-stopped
   radarr:
-    image: lscr.io/linuxserver/radarr:latest
+    image: lscr.io/linuxserver/radarr:5.26.2.10099-ls279
     container_name: radarr
     hostname: radarr
     networks:
