@@ -1,20 +1,45 @@
 services:  
   byparr:
-    container_name: byparr
-    hostname: byparr
-    image: ghcr.io/thephaseless/byparr:latest
-    shm_size: 2gb
-    volumes:
-      - ./configs/mediarr/byparr/screenshots:/app/screenshots
-    networks:
-      - mediarr
+  container_name: byparr
+  hostname: byparr
+  image: ghcr.io/thephaseless/byparr:main
+  shm_size: 2gb
+  volumes:
+    - ./configs/mediarr/byparr/screenshots:/app/screenshots
+  networks:
+    - mediarr
+  ports:
+    - 8191:8191
+  env_file:
+    - .env
+  environment:
+    - PUID=568
+    - PGID=568
+    - LOG_LEVEL=${LOG_LEVEL:-info}
+    - LOG_HTML=${LOG_HTML:-false}
+    - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
+    - TZ=${TIMEZONE:-Asia/Singapore}
+    - PROXY=172.16.10.3:8080
+  restart: unless-stopped
+  depends_on:
+    - pproxy
+  pproxy:
+    tty: true
+    container_name: pproxy
+    hostname: pproxy
+    restart: unless-stopped
+    image: mosajjal/pproxy:latest
     env_file:
       - .env
     environment:
-      - PUID=568
-      - PGID=568
-      - LOG_LEVEL=${LOG_LEVEL:-info}
-      - LOG_HTML=${LOG_HTML:-false}
-      - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
-      - TZ=${TIMEZONE:-Asia/Singapore}
-    restart: unless-stopped
+    command: -vv -l http://:8080 -r "socks5://ip:port#user:password"
+    networks:
+      mediarr:
+        ipv4_address: 172.16.10.3
+
+networks:
+  mediarr:
+    external: true
+    ipam:
+      config:
+        - subnet: 172.16.10.0/24
