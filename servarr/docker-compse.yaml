@@ -177,3 +177,6 @@ networks:
           gateway: 172.16.11.254
   mediarr:
     external: true
+    ipam:
+      config:
+        - subnet: 172.16.10.0/24
