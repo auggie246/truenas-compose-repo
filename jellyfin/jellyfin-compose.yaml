@@ -7,7 +7,6 @@ configs:
     content: >
       #!/usr/bin/env python3
 
-
       import os
 
       import json
@@ -15,7 +14,6 @@ configs:
       import time
 
       import shutil
-
 
       with open("/script/actions.json", "r") as f:
           actions_data = json.load(f)
@@ -139,7 +137,6 @@ services:
     environment:
       GID: "568"
       GROUP_ID: "568"
-      NVIDIA_VISIBLE_DEVICES: void
       PGID: "568"
       PUID: "568"
       TZ: Asia/Singapore
@@ -200,6 +197,12 @@ services:
         volume:
           nocopy: false
       - read_only: false
+        source: cifs_anime
+        target: /home/jellyfin/anime
+        type: volume
+        volume:
+          nocopy: false
+      - read_only: false
         source: cifs_tvshows
         target: /home/jellyfin/TV-Shows
         type: volume
@@ -207,16 +210,25 @@ services:
           nocopy: false
     labels:
       - traefik.enable=true
-      - traefik.http.routers.jellyfin.entrypoints=http-external
-      - traefik.http.routers.jellyfin.rule=Host(`jellyfin.domain.com`)
+      - traefik.http.routers.jellyfin-ext.entrypoints=http-external
+      - traefik.http.routers.jellyfin-ext.rule=Host(`jellyfin.domain.com`)
+      - traefik.http.middlewares.jellyfin-ext-https-redirect.redirectscheme.scheme=https
+      - traefik.http.routers.jellyfin-ext.middlewares=jellyfin-ext-https-redirect
+      - traefik.http.routers.jellyfin-ext-secure.entrypoints=https-external
+      - traefik.http.routers.jellyfin-ext-secure.rule=Host(`jellyfin.domain.com`)
+      - traefik.http.routers.jellyfin-ext-secure.tls=true
+      - traefik.http.routers.jellyfin-ext-secure.service=jellyfin-ext
+      - traefik.http.services.jellyfin-ext.loadbalancer.server.port=8096
+      - traefik.docker.network=proxy
+      - traefik.http.routers.jellyfin.entrypoints=http
+      - traefik.http.routers.jellyfin.rule=Host(`jellyfin.local`)
       - traefik.http.middlewares.jellyfin-https-redirect.redirectscheme.scheme=https
       - traefik.http.routers.jellyfin.middlewares=jellyfin-https-redirect
-      - traefik.http.routers.jellyfin-secure.entrypoints=https-external
-      - traefik.http.routers.jellyfin-secure.rule=Host(`jellyfin.domain.com`)
+      - traefik.http.routers.jellyfin-secure.entrypoints=https
+      - traefik.http.routers.jellyfin-secure.rule=Host(`jellyfin.local`)
       - traefik.http.routers.jellyfin-secure.tls=true
       - traefik.http.routers.jellyfin-secure.service=jellyfin
       - traefik.http.services.jellyfin.loadbalancer.server.port=8096
-      - traefik.docker.network=proxy
   permissions:
     cap_add:
       - CHOWN
@@ -242,7 +254,6 @@ services:
     environment:
       GID: "568"
       GROUP_ID: "568"
-      NVIDIA_VISIBLE_DEVICES: void
       PGID: "568"
       PUID: "568"
       TZ: Asia/Singapore
@@ -274,13 +285,18 @@ services:
 volumes:
   cifs_movies:
     driver_opts:
-      device: //creed-server.local/data/media/movies
-      o: noperm,password=143928,user=augustine
+      device: //truenas.local/data/media/movies
+      o: noperm,password=${PASSWORD},user=<replace-with-truenas-user>
+      type: cifs
+  cifs_anime:
+    driver_opts:
+      device: //truenas.local/data/media/anime
+      o: noperm,password=${PASSWORD},user=<replace-with-truenas-user>
       type: cifs
   cifs_tvshows:
     driver_opts:
-      device: //creed-server.local/data/media/tv
-      o: noperm,password=143928,user=augustine
+      device: //truenas.local/data/media/tv
+      o: noperm,password=${PASSWORD},user=<replace-with-truenas-user>
       type: cifs
   jellyfin-transcodes: {}
 x-portals:
