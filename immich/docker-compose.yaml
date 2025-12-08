@@ -102,6 +102,5 @@ services:
 networks:
   immich_internal:
     name: immich_internal
-    internal: true
   proxy:
     external: true    
