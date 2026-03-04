@@ -27,6 +27,8 @@ services:
     networks:
       - proxy
       - nextcloud_internal
+    links:
+      - db
   
   db:
     image: mariadb:10.6
