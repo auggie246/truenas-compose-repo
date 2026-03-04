@@ -7,7 +7,7 @@ services:
       - PGID=1000
       - TZ=Etc/UTC
     volumes:
-      - ${UPLOAD_LOCATION}:/config
+      - ${CONF_LOCATION}:/config
       - ${DATA_LOCATION}:/data
     # ports:
     #  - 443:443
