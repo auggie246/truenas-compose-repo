@@ -7,8 +7,8 @@ services:
       - PGID=1000
       - TZ=Etc/UTC
     volumes:
-      - /home/ubuntu/docker/nextcloud/appdata:/config
-      - /home/ubuntu/docker/nextcloud/data:/data
+      - ${UPLOAD_LOCATION}:/config
+      - ${DATA_LOCATION}:/data
     # ports:
     #  - 443:443
     restart: unless-stopped
