@@ -220,15 +220,6 @@ services:
       - traefik.http.routers.jellyfin-ext-secure.service=jellyfin-ext
       - traefik.http.services.jellyfin-ext.loadbalancer.server.port=8096
       - traefik.docker.network=proxy
-      - traefik.http.routers.jellyfin.entrypoints=http
-      - traefik.http.routers.jellyfin.rule=Host(`jellyfin.local`)
-      - traefik.http.middlewares.jellyfin-https-redirect.redirectscheme.scheme=https
-      - traefik.http.routers.jellyfin.middlewares=jellyfin-https-redirect
-      - traefik.http.routers.jellyfin-secure.entrypoints=https
-      - traefik.http.routers.jellyfin-secure.rule=Host(`jellyfin.local`)
-      - traefik.http.routers.jellyfin-secure.tls=true
-      - traefik.http.routers.jellyfin-secure.service=jellyfin
-      - traefik.http.services.jellyfin.loadbalancer.server.port=8096
   permissions:
     cap_add:
       - CHOWN
