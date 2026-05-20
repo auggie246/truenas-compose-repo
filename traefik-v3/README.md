@@ -1,0 +1,1 @@
+IT IS VERY IMPORTANT THAT acme.json permission is 600 to not cause issue with renewal. If not Traefik will fall back to default cert and ssl verification will fail be it in browser or from other service.
