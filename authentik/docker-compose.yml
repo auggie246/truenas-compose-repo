@@ -27,6 +27,7 @@ services:
     hostname: authentik
     networks:
       - authentik
+      - proxy
     environment:
       AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:?secret key required}
       AUTHENTIK_POSTGRESQL__HOST: postgresql
@@ -45,6 +46,20 @@ services:
       postgresql:
         condition: service_healthy
     shm_size: 512mb
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.authentik.entrypoints=http
+      - traefik.http.routers.authentik.rule=Host(`authentik.domain.com`)
+      - traefik.http.middlewares.authentik-https-redirect.redirectscheme.scheme=https
+      - traefik.http.routers.authentik.middlewares=authentik-https-redirect
+      - traefik.http.routers.authentik-secure.entrypoints=https
+      - traefik.http.routers.authentik-secure.rule=Host(`authentik.domain.com`)
+      - traefik.http.routers.authentik-secure.tls=true
+      - traefik.http.routers.authentik-secure.service=authentik
+      - traefik.http.routers.authentik-secure.tls.certresolver=cloudflare
+      - traefik.http.routers.authentik-secure.tls.domains[0].main=auggie.space  ## required for internal services
+      - traefik.http.routers.authentik-secure.tls.domains[0].sans=*.auggie.space
   worker:
     image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2025.10}
     restart: unless-stopped
@@ -75,9 +90,12 @@ services:
         condition: service_healthy
     networks:
       - authentik
+
 volumes:
   database:
     driver: local
 networks:
   authentik:
+    external: true
+  proxy:
     external: true
