@@ -1,0 +1,72 @@
+services:
+  server:
+    image: codeberg.org/forgejo/forgejo:16
+    container_name: forgejo
+    environment:
+      - USER_UID=568
+      - USER_GID=568
+      - TZ=Asia/Singapore
+      - FORGEJO__database__DB_TYPE=postgres
+      - FORGEJO__database__HOST=db:5432
+      - FORGEJO__database__NAME=forgejo
+      - FORGEJO__database__USER=forgejo
+      - FORGEJO__database__PASSWD=${POSTGRES_PASSWORD}
+      - FORGEJO__server__DOMAIN=${FORGEJO_DOMAIN}
+      - FORGEJO__server__ROOT_URL=https://${FORGEJO_DOMAIN}/
+      - FORGEJO__server__SSH_DOMAIN=${FORGEJO_DOMAIN}
+      - FORGEJO__server__SSH_PORT=${SSH_HOST_PORT}
+      - FORGEJO__server__SSH_LISTEN_PORT=22
+      - FORGEJO__service__DISABLE_REGISTRATION=true
+      - FORGEJO__security__INSTALL_LOCK=true
+    restart: unless-stopped
+    volumes:
+      - ${DATA_LOCATION}:/data
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "${SSH_HOST_PORT}:22"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - forgejo_internal
+      - proxy
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.services.forgejo.loadbalancer.server.port=3000
+      # LAN + Tailscale only
+      - traefik.http.middlewares.forgejo-lan-only.ipallowlist.sourcerange=${ALLOWED_SOURCE_RANGE}
+      - traefik.http.middlewares.forgejo-https-redirect.redirectscheme.scheme=https
+      - traefik.http.routers.forgejo.entrypoints=http
+      - traefik.http.routers.forgejo.rule=Host(`${FORGEJO_DOMAIN}`)
+      - traefik.http.routers.forgejo.middlewares=forgejo-lan-only,forgejo-https-redirect
+      - traefik.http.routers.forgejo-secure.entrypoints=https
+      - traefik.http.routers.forgejo-secure.rule=Host(`${FORGEJO_DOMAIN}`)
+      - traefik.http.routers.forgejo-secure.middlewares=forgejo-lan-only
+      # no certresolver: a private local domain can't get a public cert, Traefik default self-signed cert is served
+      - traefik.http.routers.forgejo-secure.tls=true
+      - traefik.http.routers.forgejo-secure.service=forgejo
+
+  db:
+    image: postgres:17-alpine
+    container_name: forgejo-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=forgejo
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=forgejo
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U forgejo -d forgejo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ${POSTGRES_DATA_LOCATION}:/var/lib/postgresql/data
+    networks:
+      - forgejo_internal
+
+networks:
+  forgejo_internal:
+    name: forgejo_internal
+  proxy:
+    external: true
