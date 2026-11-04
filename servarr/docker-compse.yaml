@@ -18,7 +18,7 @@ services:
       - sonarr
       - radarr
   sonarr:
-    image: ghcr.io/linuxserver/sonarr:version-4.0.15.2941
+    image: ghcr.io/linuxserver/sonarr:4.0.19.2979-ls320
     container_name: sonarr
     hostname: sonarr
     networks:
@@ -37,7 +37,7 @@ services:
       - 8989:8989
     restart: unless-stopped
   radarr:
-    image: lscr.io/linuxserver/radarr:5.26.2.10099-ls279
+    image: lscr.io/linuxserver/radarr:6.3.0.10514-ls312
     container_name: radarr
     hostname: radarr
     networks:
@@ -56,7 +56,7 @@ services:
       - prowlarr
       - qbittorrent
   bazarr:
-    image: lscr.io/linuxserver/bazarr:latest
+    image: lscr.io/linuxserver/bazarr:v1.6.0-ls356
     container_name: bazarr
     hostname: bazarr
     networks:
@@ -75,7 +75,7 @@ services:
       - sonarr
       - radarr
   prowlarr:
-    image: linuxserver/prowlarr:latest
+    image: linuxserver/prowlarr:2.5.2.5491-ls155
     container_name: prowlarr
     hostname: prowlarr
     networks:
@@ -92,7 +92,7 @@ services:
     depends_on:
       - flaresolverr
   flaresolverr:
-    image: ghcr.io/flaresolverr/flaresolverr:latest
+    image: ghcr.io/flaresolverr/flaresolverr:v3.5.0
     container_name: flaresolverr
     hostname: flaresolverr
     environment:
@@ -105,8 +105,26 @@ services:
     networks:
       - mediarr
     restart: unless-stopped
+  syncthing:
+    image: lscr.io/linuxserver/syncthing:v2.1.2-ls226
+    container_name: syncthing
+    hostname: syncthing
+    environment:
+      - PUID=568
+      - PGID=568
+      - TZ=${TIMEZONE:-Asia/Singapore}
+    volumes:
+      - ./configs/syncthing/config:/config
+      - /mnt/NAS/data/torrents_syncthing/:/data-creed/torrents/
+      #- /path/to/data2:/data2
+    ports:
+      - 8384:8384
+      - 22000:22000/tcp
+      - 22000:22000/udp
+      - 21027:21027/udp
+    restart: unless-stopped
   gluetun:
-    image: ghcr.io/qdm12/gluetun:latest
+    image: ghcr.io/qdm12/gluetun:v3.41.3
     container_name: gluetun
     cap_add:
       - NET_ADMIN
@@ -130,7 +148,7 @@ services:
       gluetun-network:
         ipv4_address: 172.16.11.10
   qbittorrent:
-    image: lscr.io/linuxserver/qbittorrent:latest
+    image: lscr.io/linuxserver/qbittorrent:5.2.3_v2.0.13-ls469
     container_name: qbittorrent
     depends_on:
       gluetun:
