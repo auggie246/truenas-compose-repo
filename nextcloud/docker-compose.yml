@@ -3,18 +3,20 @@ services:
     image: linuxserver/nextcloud:33.0.0
     container_name: nextcloud
     environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Etc/UTC
+      - PUID=568
+      - PGID=568
+      - TZ=Asia/Singapore
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_DATABASE=nextcloud
       - MYSQL_USER=nextcloud
       - MYSQL_HOST=db
+      - NEXTCLOUD_TRUSTED_DOMAINS=truenas.local nextcloud.YOUR_DOMAIN.co.uk
     volumes:
       - ${CONF_LOCATION}:/config
       - ${DATA_LOCATION}:/data
-    # ports:
-    #  - 443:443
+    ports:
+      - 8081:80
+      #- 4444:443
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
