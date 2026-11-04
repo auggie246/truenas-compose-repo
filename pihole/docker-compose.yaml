@@ -6,7 +6,7 @@ services:
       - "53:53/tcp" # DNS
       - "53:53/udp" # DNS
       - "67:67/udp" # DHCP
-      - "8888:8888/tcp" # web interface
+      - "500:8888/tcp" # web interface
     #  - "443:443/tcp"
     networks:
     #   pihole_internal:
@@ -14,7 +14,7 @@ services:
       proxy:
     environment:
       TZ: 'Asia/Singapore'
-      PIHOLE_DNS_: 9.9.9.9;149.112.112.112;1.1.1.1;1.0.0.1 # Quad9 and Cloudflare
+      PIHOLE_DNS_: 192.168.1.1#53;9.9.9.9;149.112.112.112;1.1.1.1;1.0.0.1 # Quad9 and Cloudflare
       DNSMASQ_LISTENING: 'all'
     env_file:
       - .env
@@ -45,9 +45,6 @@ services:
       - "traefik.http.routers.pihole-secure.service=pihole"
       - "traefik.http.services.pihole.loadbalancer.server.port=${PORT}"
       - "traefik.docker.network=proxy"
-      - "traefik.http.middlewares.pihole-addprefix.addprefix.prefix=/admin"
-      - "traefik.http.middlewares.pihole-redirectregex.redirectregex.regex=/admin/$"
-      - "traefik.http.middlewares.pihole-redirectregex.redirectregex.replacement=/"
 
 networks:
   # pihole_internal:
