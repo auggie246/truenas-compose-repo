@@ -1,6 +1,6 @@
 services:
   crowdsec:
-    image: crowdsecurity/crowdsec:latest
+    image: crowdsecurity/crowdsec:v1.7.6
     container_name: crowdsec
     environment:
       GID: "${GID-1000}"
