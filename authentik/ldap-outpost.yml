@@ -11,9 +11,13 @@ services:
     environment:
       AUTHENTIK_HOST: http://authentik:9000/
       AUTHENTIK_INSECURE: "false"
+      AUTHENTIK_TOKEN: ${AUTHENTIK_TOKEN}
+      # Create an outpost via the UI but do not select integration for manual deployment.
+      # Then view deployment info and copy token
     env_file:
       - .env
     restart: unless-stopped
 networks:
   authentik:
+    name: authentik
     external: true

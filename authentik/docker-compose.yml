@@ -46,6 +46,7 @@ services:
       postgresql:
         condition: service_healthy
     shm_size: 512mb
+    user: root
     labels:
       - traefik.enable=true
       - traefik.docker.network=proxy
@@ -56,7 +57,6 @@ services:
       - traefik.http.routers.authentik-secure.entrypoints=https
       - traefik.http.routers.authentik-secure.rule=Host(`authentik.domain.com`)
       - traefik.http.routers.authentik-secure.tls=true
-      - traefik.http.routers.authentik-secure.service=authentik
       - traefik.http.routers.authentik-secure.tls.certresolver=cloudflare
       - traefik.http.routers.authentik-secure.tls.domains[0].main=auggie.space  ## required for internal services
       - traefik.http.routers.authentik-secure.tls.domains[0].sans=*.auggie.space
