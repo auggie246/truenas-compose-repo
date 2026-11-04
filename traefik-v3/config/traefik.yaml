@@ -34,6 +34,10 @@ entryPoints:
         - 2a06:98c0::/29
         - 2c0f:f248::/32
         # End of Cloudlare public IP list
+        # Local IPs
+        - "127.0.0.1/32"
+        - "192.168.1.0/24"
+        # End of Local IPs
     http:
       middlewares:
         - crowdsec-bouncer@file
