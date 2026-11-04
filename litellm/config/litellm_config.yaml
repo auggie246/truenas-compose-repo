@@ -1,0 +1,31 @@
+# LiteLLM proxy config — mounted into the container at /app/config.yaml.
+# Secrets are NOT stored here; they are referenced via os.environ/* and loaded
+# from .env by docker compose. Keep this file free of plaintext credentials.
+
+model_list:
+  # Requirement 4: model served by vLLM.
+  # vLLM exposes an OpenAI-compatible API, so we use the hosted_vllm provider.
+  - model_name: qwen3.6-27b-autoround
+    litellm_params:
+      model: hosted_vllm/qwen3.6-27b-autoround
+      api_base: http://192.168.1.194:8011/v1
+      # No api_key: vLLM is keyless and only reachable on the local network.
+      # Client auth is handled by LiteLLM (master key / virtual keys), and the
+      # hosted_vllm provider supplies its own placeholder key downstream.
+  - model_name: claude-opus-4-8
+    litellm_params:
+      model: anthropic/claude-opus-4-8
+  - model_name: claude-sonnet-4-6
+    litellm_params:
+      model: anthropic/claude-sonnet-4-6
+
+litellm_settings:
+  mcp_aliases: {
+      "github": "github_mcp_server",
+    } 
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+  store_model_in_db: true
+  supported_db_objects: ["mcp", "models"]
+  forward_client_headers_to_llm_api: true
